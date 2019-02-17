@@ -34,6 +34,7 @@ int send_packet(sock_t sock, void *buf, int len, uint32_t idx)
 		ret =
 		    pfring_zc_send_pkt(sock.pf.queue, &sock.pf.buffers[idx], 0);
 	} while (ret < 0);
+  perror("pfring_zc_send_pkt");
 	return ret;
 }
 

@@ -91,6 +91,7 @@ static int synscan_validate_packet(const struct ip *ip_hdr, uint32_t len,
 				   uint32_t *validation)
 {
 	if (ip_hdr->ip_p != IPPROTO_TCP) {
+    printf("synscan_validate_packet: not tcp, ip_hdr->ip_p=%d\n", ip_hdr->ip_p);
 		return 0;
 	}
 	if ((4 * ip_hdr->ip_hl + sizeof(struct tcphdr)) > len) {

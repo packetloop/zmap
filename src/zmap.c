@@ -57,6 +57,9 @@ static int64_t distrib_func(pfring_zc_pkt_buff *pkt, pfring_zc_queue *in_queue,
 	(void)pkt;
 	(void)in_queue;
 	(void)arg;
+
+	printf("distrib_func: pkt->len %d\n", pkt->len);
+
 	return 0;
 }
 
@@ -906,13 +909,16 @@ int main(int argc, char *argv[])
 			log_fatal("zmap", "Could not get ZC packet handle");
 		}
 	}
+	printf("zmap: opening device for sending: %s\n", zconf.iface);
 
 	zconf.pf.send =
-	    pfring_zc_open_device(zconf.pf.cluster, zconf.iface, tx_only, 0);
+	    pfring_zc_open_device(zconf.pf.cluster, zconf.iface, tx_only, PF_RING_ZC_DEVICE_NOT_PROMISC);
 	if (zconf.pf.send == NULL) {
 		log_fatal("zmap", "Could not open device %s for TX. [%s]",
 			  zconf.iface, strerror(errno));
 	}
+
+	printf("zmap: opening device for recving: %s\n", zconf.iface);
 
 	zconf.pf.recv =
 	    pfring_zc_open_device(zconf.pf.cluster, zconf.iface, rx_only, PF_RING_ZC_DEVICE_NOT_PROMISC);

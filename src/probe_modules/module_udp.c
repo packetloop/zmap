@@ -445,15 +445,18 @@ int udp_do_validate_packet(const struct ip *ip_hdr, uint32_t len,
 		if ((4 * ip_hdr->ip_hl + sizeof(struct udphdr)) > len) {
 			// buffer not large enough to contain expected udp
 			// header
+      printf("udp_do_validate_packet: len = %d\n", len);
 			return PACKET_INVALID;
 		}
 		struct udphdr *udp =
 		    (struct udphdr *)((char *)ip_hdr + 4 * ip_hdr->ip_hl);
 		uint16_t sport = ntohs(udp->uh_dport);
 		if (!check_dst_port(sport, num_ports, validation)) {
+      printf("udp_do_validate_packet: dst_port = %d\n", sport);
 			return PACKET_INVALID;
 		}
 		if (!blacklist_is_allowed(*src_ip)) {
+      printf("udp_do_validate_packet: blacklist_is_allowed = false\n");
 			return PACKET_INVALID;
 		}
 	} else if (ip_hdr->ip_p == IPPROTO_ICMP) {
@@ -463,12 +466,14 @@ int udp_do_validate_packet(const struct ip *ip_hdr, uint32_t len,
 		    4 * ip_hdr->ip_hl + ICMP_UNREACH_HEADER_SIZE +
 		    sizeof(struct ip) + sizeof(struct udphdr);
 		if (len < min_len) {
+      printf("udp_do_validate_packet: icmp min_len = %d\n", min_len);
 			// Not enough information for us to validate
 			return PACKET_INVALID;
 		}
 		struct icmp *icmp =
 		    (struct icmp *)((char *)ip_hdr + 4 * ip_hdr->ip_hl);
 		if (icmp->icmp_type != ICMP_UNREACH) {
+      printf("udp_do_validate_packet: icmp_type = %d\n", icmp->icmp_type);
 			return PACKET_INVALID;
 		}
 		struct ip *ip_inner =
@@ -476,12 +481,14 @@ int udp_do_validate_packet(const struct ip *ip_hdr, uint32_t len,
 		// Now we know the actual inner ip length, we should recheck the
 		// buffer
 		if (len < 4 * ip_inner->ip_hl - sizeof(struct ip) + min_len) {
+      printf("udp_do_validate_packet: inner ip length not valid\n");
 			return PACKET_INVALID;
 		}
 		// find original destination IP and check that we sent a packet
 		// to that IP address
 		uint32_t dest = ip_inner->ip_dst.s_addr;
 		if (!blacklist_is_allowed(dest)) {
+      printf("udp_do_validate_packet: dest ip %u blacklist_is_allowed false\n", dest);
 			return PACKET_INVALID;
 		}
 		// This is the UDP packet we sent
@@ -493,14 +500,18 @@ int udp_do_validate_packet(const struct ip *ip_hdr, uint32_t len,
 		uint16_t dport = ntohs(udp->uh_dport);
 		uint16_t sport = ntohs(udp->uh_sport);
 		if (dport != zconf.target_port) {
+      printf("udp_do_validate_packet: dport %d is not target_port %d\n", dport, zconf.target_port);
 			return PACKET_INVALID;
 		}
 		if (!check_dst_port(sport, num_ports, validation)) {
+      printf("udp_do_validate_packet: dport %d is not valid\n", dport);
 			return PACKET_INVALID;
 		}
 	} else {
+    printf("udp_do_validate_packet: not icmp or udp, ip_hdr->ip_p=%d\n", ip_hdr->ip_p);
 		return PACKET_INVALID;
 	}
+  printf("udp_do_validate_packet: valid!!!\n");
 	return PACKET_VALID;
 }
 

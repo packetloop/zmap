@@ -16,6 +16,7 @@
 
 #include <pthread.h>
 #include <unistd.h>
+#include <sys/fcntl.h>
 
 #include "recv-internal.h"
 #include "state.h"
@@ -29,11 +30,13 @@ static u_char fake_eth_hdr[65535];
 // bitmap of observed IP addresses
 static uint8_t **seen = NULL;
 
+int packet_fd = -1;
 void handle_packet(uint32_t buflen, const u_char *bytes)
 {
 	if ((sizeof(struct ip) + zconf.data_link_size) > buflen) {
 		// buffer not large enough to contain ethernet
 		// and ip headers. further action would overrun buf
+    printf("handle_packet: no enough data.\n");
 		return;
 	}
 	struct ip *ip_hdr = (struct ip *)&bytes[zconf.data_link_size];
@@ -46,13 +49,24 @@ void handle_packet(uint32_t buflen, const u_char *bytes)
 	validate_gen(ip_hdr->ip_dst.s_addr, ip_hdr->ip_src.s_addr,
 		     (uint8_t *)validation);
 
+  if (packet_fd == -1) {
+    packet_fd = open("/tmp/packets_dump.bin", O_CREAT | O_RDWR, 0600);
+    printf("handle_packet, sizeof(struct_ip) = %d, zconf.data_link_size = %d\n", sizeof(struct ip), zconf.data_link_size);
+  }
+  if (packet_fd != -1) {
+    write(packet_fd, &buflen, sizeof(buflen));
+    write(packet_fd, bytes, buflen);
+  }
+
 	if (!zconf.probe_module->validate_packet(
 		ip_hdr,
 		buflen - (zconf.send_ip_pkts ? 0 : sizeof(struct ether_header)),
 		&src_ip, validation)) {
 		zrecv.validation_failed++;
+    printf("handle_packet: validation_failed: %d\n", zrecv.validation_failed);
 		return;
 	} else {
+    printf("handle_packet: validation_passed: %d\n", zrecv.validation_passed);
 		zrecv.validation_passed++;
 	}
 	// woo! We've validated that the packet is a response to our scan
@@ -61,6 +75,7 @@ void handle_packet(uint32_t buflen, const u_char *bytes)
 	if (ip_hdr->ip_off & IP_MF) {
 		zrecv.ip_fragments++;
 	}
+  printf("handle_packet: response recved.\n");
 
 	fieldset_t *fs = fs_new_fieldset();
 	fs_add_ip_fields(fs, ip_hdr);
@@ -114,17 +129,21 @@ void handle_packet(uint32_t buflen, const u_char *bytes)
 	// we need to translate the data provided by the probe module
 	// into a fieldset that can be used by the output module
 	if (!is_success && zconf.filter_unsuccessful) {
+    printf("handle_packet: filter_unsuccessful.\n");
 		goto cleanup;
 	}
 	if (is_repeat && zconf.filter_duplicates) {
+    printf("handle_packet: filter_duplicates.\n");
 		goto cleanup;
 	}
 	if (!evaluate_expression(zconf.filter.expression, fs)) {
+    printf("handle_packet: filter_expression.\n");
 		goto cleanup;
 	}
 	zrecv.filter_success++;
 	o = translate_fieldset(fs, &zconf.fsconf.translation);
 	if (zconf.output_module && zconf.output_module->process_ip) {
+    printf("handle_packet: process_fieldsets: %d.\n", o->len);
 		zconf.output_module->process_ip(o);
 	}
 cleanup:
