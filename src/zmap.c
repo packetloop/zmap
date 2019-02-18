@@ -46,6 +46,10 @@
 #include "probe_modules/probe_modules.h"
 
 #ifdef PFRING
+#define MAX_CARD_SLOTS 32768
+#define QUEUE_LEN 8192
+#define ZMAP_PF_BUFFER_SIZE 1536
+#define ZMAP_PF_ZC_CLUSTER_ID 9627
 #include <pfring_zc.h>
 static int64_t distrib_func(pfring_zc_pkt_buff *pkt, pfring_zc_queue *in_queue,
 			    void *arg)
@@ -54,6 +58,27 @@ static int64_t distrib_func(pfring_zc_pkt_buff *pkt, pfring_zc_queue *in_queue,
 	(void)in_queue;
 	(void)arg;
 	return 0;
+}
+
+pfring_zc_cluster * create_cluster(int metadata_len, int total_buffers, int numa_node) {
+  pfring_zc_cluster * cluster = NULL;
+  int cluster_id = 0;
+  int tries = 0;
+  while (cluster == NULL) {
+    cluster_id = ZMAP_PF_ZC_CLUSTER_ID + tries;
+    cluster = pfring_zc_create_cluster(
+          cluster_id, ZMAP_PF_BUFFER_SIZE, metadata_len,
+          total_buffers, numa_node, NULL);
+    if (++tries > 10) {
+      break;
+    }
+  }
+	if (cluster == NULL) {
+		log_fatal("zmap", "Could not create zc cluster: %s",
+			  strerror(errno));
+	}
+  log_info("zmap", "Created zc_cluster: %d\n", cluster_id);
+  return cluster;
 }
 #endif
 
@@ -864,10 +889,6 @@ int main(int argc, char *argv[])
 
 // PFRING
 #ifdef PFRING
-#define MAX_CARD_SLOTS 32768
-#define QUEUE_LEN 8192
-#define ZMAP_PF_BUFFER_SIZE 1536
-#define ZMAP_PF_ZC_CLUSTER_ID 9627
 	uint32_t user_buffers = zconf.senders * 256;
 	uint32_t queue_buffers = zconf.senders * QUEUE_LEN;
 	uint32_t card_buffers = 2 * MAX_CARD_SLOTS;
@@ -875,13 +896,7 @@ int main(int argc, char *argv[])
 	    user_buffers + queue_buffers + card_buffers + 2;
 	uint32_t metadata_len = 0;
 	uint32_t numa_node = pfring_zc_numa_get_cpu_node(-1);
-	zconf.pf.cluster = pfring_zc_create_cluster(
-	    ZMAP_PF_ZC_CLUSTER_ID, ZMAP_PF_BUFFER_SIZE, metadata_len,
-	    total_buffers, numa_node, NULL);
-	if (zconf.pf.cluster == NULL) {
-		log_fatal("zmap", "Could not create zc cluster: %s",
-			  strerror(errno));
-	}
+	zconf.pf.cluster = create_cluster(metadata_len, total_buffers, numa_node);
 
 	zconf.pf.buffers = xcalloc(user_buffers, sizeof(pfring_zc_pkt_buff *));
 	for (uint32_t i = 0; i < user_buffers; ++i) {
