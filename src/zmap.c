@@ -114,7 +114,7 @@ const char *default_help_text =
 static void *start_send(void *arg)
 {
 	send_arg_t *s = (send_arg_t *)arg;
-	log_debug("zmap", "Pinning a send thread to core %u", s->cpu);
+	log_debug("zmap", "Pinning a send thread to core %u, thread(%d)", s->cpu, pthread_self());
 	set_cpu(s->cpu);
 	send_run(s->sock, s->shard);
 	free(s);
@@ -124,7 +124,7 @@ static void *start_send(void *arg)
 static void *start_recv(void *arg)
 {
 	recv_arg_t *r = (recv_arg_t *)arg;
-	log_debug("zmap", "Pinning receive thread to core %u", r->cpu);
+	log_debug("zmap", "Pinning receive thread to core %u", r->cpu, , pthread_self());
 	set_cpu(r->cpu);
 	recv_run(&recv_ready_mutex);
 	return NULL;
@@ -133,7 +133,7 @@ static void *start_recv(void *arg)
 static void *start_mon(void *arg)
 {
 	mon_start_arg_t *mon_arg = (mon_start_arg_t *)arg;
-	log_debug("zmap", "Pinning monitor thread to core %u", mon_arg->cpu);
+	log_debug("zmap", "Pinning monitor thread to core %u", mon_arg->cpu, pthread_self());
 	set_cpu(mon_arg->cpu);
 	monitor_run(mon_arg->it, mon_arg->recv_ready_mutex);
 	free(mon_arg);
@@ -946,6 +946,7 @@ int main(int argc, char *argv[])
 
 	// resume scan if requested
 
+  log_debug("zmap", "Main thread(%d)", pthread_self());
 	start_zmap();
 
 	fclose(log_location);
