@@ -67,7 +67,7 @@ void handle_packet(uint32_t buflen, const u_char *bytes)
     printf("handle_packet: validation_failed: %d\n", zrecv.validation_failed);
 		return;
 	} else {
-    printf("handle_packet: validation_passed: %d\n", zrecv.validation_passed);
+    // printf("handle_packet: validation_passed: %d\n", zrecv.validation_passed);
 		zrecv.validation_passed++;
 	}
 	// woo! We've validated that the packet is a response to our scan
@@ -76,7 +76,7 @@ void handle_packet(uint32_t buflen, const u_char *bytes)
 	if (ip_hdr->ip_off & IP_MF) {
 		zrecv.ip_fragments++;
 	}
-  printf("handle_packet: response recved.\n");
+  // printf("handle_packet: response recved.\n");
 
 	fieldset_t *fs = fs_new_fieldset();
 	fs_add_ip_fields(fs, ip_hdr);
@@ -144,7 +144,7 @@ void handle_packet(uint32_t buflen, const u_char *bytes)
 	zrecv.filter_success++;
 	o = translate_fieldset(fs, &zconf.fsconf.translation);
 	if (zconf.output_module && zconf.output_module->process_ip) {
-    printf("handle_packet: process_fieldsets: %d.\n", o->len);
+    // printf("handle_packet: process_fieldsets: %d.\n", o->len);
 		zconf.output_module->process_ip(o);
 	}
 cleanup:
