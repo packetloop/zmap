@@ -18,6 +18,8 @@
 #include <pwd.h>
 #include <time.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 
 #include <pcap/pcap.h>
 #include <json.h>
@@ -115,7 +117,7 @@ const char *default_help_text =
 static void *start_send(void *arg)
 {
 	send_arg_t *s = (send_arg_t *)arg;
-	log_debug("zmap", "Pinning a send thread to core %u, thread(%d)", s->cpu, gettid());
+	log_debug("zmap", "Pinning a send thread to core %u, thread(%d)", s->cpu, syscall(SYS_gettid));
 	set_cpu(s->cpu);
 	send_run(s->sock, s->shard);
 	free(s);
@@ -125,7 +127,7 @@ static void *start_send(void *arg)
 static void *start_recv(void *arg)
 {
 	recv_arg_t *r = (recv_arg_t *)arg;
-	log_debug("zmap", "Pinning receive thread to core %u, thread(%d)", r->cpu, gettid());
+	log_debug("zmap", "Pinning receive thread to core %u, thread(%d)", r->cpu, syscall(SYS_gettid));
 	set_cpu(r->cpu);
 	recv_run(&recv_ready_mutex);
 	return NULL;
@@ -134,7 +136,7 @@ static void *start_recv(void *arg)
 static void *start_mon(void *arg)
 {
 	mon_start_arg_t *mon_arg = (mon_start_arg_t *)arg;
-	log_debug("zmap", "Pinning monitor thread to core %u, thread(%d)", mon_arg->cpu, gettid());
+	log_debug("zmap", "Pinning monitor thread to core %u, thread(%d)", mon_arg->cpu, syscall(SYS_gettid));
 	set_cpu(mon_arg->cpu);
 	monitor_run(mon_arg->it, mon_arg->recv_ready_mutex);
 	free(mon_arg);
