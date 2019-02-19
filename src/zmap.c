@@ -124,7 +124,7 @@ static void *start_send(void *arg)
 static void *start_recv(void *arg)
 {
 	recv_arg_t *r = (recv_arg_t *)arg;
-	log_debug("zmap", "Pinning receive thread to core %u", r->cpu, , pthread_self());
+	log_debug("zmap", "Pinning receive thread to core %u", r->cpu, pthread_self());
 	set_cpu(r->cpu);
 	recv_run(&recv_ready_mutex);
 	return NULL;
