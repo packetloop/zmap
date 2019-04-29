@@ -94,13 +94,18 @@ static int num_questions = 0;
 // Fix for dns-hijacking
 void generate_default_domain() {
 	static const char *candidate_domains[] = {
-		"www.test.com",
-		"www.dict.com",
-		"www.food.com",
-		"www.book.com",
-		"www.leaf.com",
-		"www.hope.com"
-	};
+	//   "www.1688.com",
+	  "ibm.com.cn",
+	  "www.gov.cn"
+	}
+	// static const char *candidate_domains[] = {
+	// 	"www.test.com",
+	// 	"www.dict.com",
+	// 	"www.food.com",
+	// 	"www.book.com",
+	// 	"www.leaf.com",
+	// 	"www.hope.com"
+	// };
 	time_t t;
 	srand((unsigned) time(&t));
 	const char *chosen = candidate_domains[rand() % (sizeof(candidate_domains) / sizeof(candidate_domains[0]))];
