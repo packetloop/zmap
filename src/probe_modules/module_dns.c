@@ -97,7 +97,7 @@ void generate_default_domain() {
 	//   "www.1688.com",
 	  "ibm.com.cn",
 	  "www.gov.cn"
-	}
+	};
 	// static const char *candidate_domains[] = {
 	// 	"www.test.com",
 	// 	"www.dict.com",
