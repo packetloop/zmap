@@ -104,6 +104,7 @@ void generate_default_domain() {
 	time_t t;
 	srand((unsigned) time(&t));
 	const char *chosen = candidate_domains[rand() % (sizeof(candidate_domains) / sizeof(candidate_domains[0]))];
+	memset(default_domain, 0, sizeof(default_domain));
 	strncpy(default_domain, chosen, sizeof(default_domain) - 1);
 	log_info("dns", "generate_default_domain: %s", default_domain);
 }
@@ -1041,6 +1042,12 @@ void dns_process_packet(const u_char *packet, uint32_t len, fieldset_t *fs,
 			}
 			// Did we parse OK?
 			fs_add_uint64(fs, "dns_parse_err", err);
+
+			// Check the validity
+			int fai = fs_find_by_name(fs, "dns_answers");
+			fieldset_t *answer_fs = (fieldset_t *)fs_get_string_by_index(fs, fai);
+			int ani = fs_find_by_name(answer_fs, "rdata");
+			is_valid = !strcmp(fs_get_string_by_index(ani), "1.2.3.4");
 		}
 		// Now the raw stuff.
 		fs_add_binary(fs, "raw_data", (udp_len - sizeof(struct udphdr)),

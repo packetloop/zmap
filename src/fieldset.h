@@ -131,6 +131,8 @@ void fs_modify_string(fieldset_t *fs, const char *name, char *value, int free_);
 void fs_modify_binary(fieldset_t *fs, const char *name, size_t len, void *value,
 		      int free_);
 
+int fs_find_by_name(fieldset_t *fs, const char *name);
+
 uint64_t fs_get_uint64_by_index(fieldset_t *fs, int index);
 
 void fs_free(fieldset_t *fs);
