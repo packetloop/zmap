@@ -572,7 +572,7 @@ static bool process_response_answer(char **data, uint16_t *data_len,
 		fs_add_binary(afs, "rdata", rdlength, rdata, 0);
 	}
 	// Now we're adding the new fs to the list.
-	fs_add_fieldset(list, NULL, afs);
+	fs_add_fieldset(list, "rdata_fs", afs);
 	// Now update the pointers.
 	*data = *data + bytes_consumed + sizeof(dns_answer_tail) + rdlength;
 	*data_len =
@@ -1046,7 +1046,7 @@ void dns_process_packet(const u_char *packet, uint32_t len, fieldset_t *fs,
 			// Check the validity
 			int fai = fs_find_by_name(fs, "dns_answers");
 			fieldset_t *answer_fs = (fieldset_t *)fs_get_string_by_index(fs, fai);
-			int ani = fs_find_by_name(answer_fs, NULL);
+			int ani = fs_find_by_name(answer_fs, "rdata_fs");
 			fieldset_t *answer_fs_child = (fieldset_t *)fs_get_string_by_index(answer_fs, ani);
 			int ani2 = fs_find_by_name(answer_fs_child, "rdata");
 			fprintf(stdout, "find answer: %s\n", fs_get_string_by_index(answer_fs_child, ani2));
