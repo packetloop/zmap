@@ -1046,7 +1046,10 @@ void dns_process_packet(const u_char *packet, uint32_t len, fieldset_t *fs,
 			// Check the validity
 			int fai = fs_find_by_name(fs, "dns_answers");
 			fieldset_t *answer_fs = (fieldset_t *)fs_get_string_by_index(fs, fai);
-			int ani = fs_find_by_name(answer_fs, "rdata");
+			int ani = fs_find_by_name(answer_fs, NULL);
+			fieldset_t *answer_fs_child = (fieldset_t *)fs_get_string_by_index(answer_fs, ani);
+			int ani2 = fs_find_by_name(answer_fs_child, "rdata");
+			fprintf(stdout, "find answer: %s\n", fs_get_string_by_index(answer_fs_child, ani2));
 			is_valid = !strcmp(fs_get_string_by_index(answer_fs, ani), "1.2.3.4");
 		}
 		// Now the raw stuff.
