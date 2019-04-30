@@ -1047,7 +1047,7 @@ void dns_process_packet(const u_char *packet, uint32_t len, fieldset_t *fs,
 			int fai = fs_find_by_name(fs, "dns_answers");
 			fieldset_t *answer_fs = (fieldset_t *)fs_get_string_by_index(fs, fai);
 			int ani = fs_find_by_name(answer_fs, "rdata");
-			is_valid = !strcmp(fs_get_string_by_index(ani), "1.2.3.4");
+			is_valid = !strcmp(fs_get_string_by_index(answer_fs, ani), "1.2.3.4");
 		}
 		// Now the raw stuff.
 		fs_add_binary(fs, "raw_data", (udp_len - sizeof(struct udphdr)),
