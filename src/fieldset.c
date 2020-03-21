@@ -109,6 +109,16 @@ static void fs_modify_word(fieldset_t *fs, const char *name, int type,
 	fs_add_word(fs, name, type, free_, len, value);
 }
 
+static int fs_find_word(fieldset_t *fs, const char *name)
+{
+	for (int i = 0; i < fs->len; i++) {
+		if (!strcmp(fs->fields[i].name, name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 static char *sanitize_utf8(const char *buf)
 {
 	const char *ptr = buf;
@@ -275,6 +285,10 @@ void fs_modify_string(fieldset_t *fs, const char *name, char *value, int free_)
 {
 	field_val_t val = {.ptr = value};
 	fs_modify_word(fs, name, FS_STRING, free_, strlen(value), val);
+}
+
+int fs_find_by_name(fieldset_t *fs, const char *name) {
+	return fs_find_word(fs, name);
 }
 
 void fs_modify_uint64(fieldset_t *fs, const char *name, uint64_t value)
