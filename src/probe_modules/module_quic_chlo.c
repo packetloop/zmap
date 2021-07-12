@@ -235,12 +235,6 @@ int chlo_quic_make_packet(void *buf, ipaddr_n_t src_ip, ipaddr_n_t dst_ip,
 	log_debug("prepare", "chlo_quic_make_packet 5.1, num_ports: %d", num_ports);
 	log_debug("prepare", "chlo_quic_make_packet 5.2, probe_num: %d", probe_num);
 	log_debug("prepare", "chlo_quic_make_packet 5.2.1, size of array validation: %d", sizeof(validation) / sizeof(uint32_t));
-	validation[0] = 0;
-	log_debug("prepare", "chlo_quic_make_packet 5.2.1.1, 0: %d", 0);
-	log_debug("prepare", "chlo_quic_make_packet 5.2.1.2, validation[0]: %d", validation[0]);
-	validation[1] = 1;
-	log_debug("prepare", "chlo_quic_make_packet 5.2.1.1, 1: %d", 1);
-	log_debug("prepare", "chlo_quic_make_packet 5.2.1.2, validation[1]: %d", validation[1]);
 	
 	uint32_t v0 = validation[0];
 	log_debug("prepare", "chlo_quic_make_packet 5.2.2, v0: %d", v0);
