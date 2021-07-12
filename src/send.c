@@ -370,7 +370,7 @@ int send_run(sock_t st, shard_t *s)
 			log_debug("prepare", "send.c, 3.0, VALIDATE_BYTES: %d", VALIDATE_BYTES);
 			log_debug("prepare", "send.c, 3.1, sizeof validation: %d", VALIDATE_BYTES / sizeof(uint32_t));
 			validate_gen(src_ip, current_ip, (uint8_t *)validation);
-			for (j=0; j<sizeof(validation) / sizeof(uint32_t); j++) {
+			for (int j=0; j<sizeof(validation) / sizeof(uint32_t); j++) {
 				log_debug("prepare", "send.c, 3.2.1, j: %d", j);
 				log_debug("prepare", "send.c, 3.2.2, validation[j]: %#010x", validation[j]);
 			}
