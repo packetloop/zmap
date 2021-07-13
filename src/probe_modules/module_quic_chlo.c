@@ -232,11 +232,6 @@ int chlo_quic_make_packet(void *buf, ipaddr_n_t src_ip, ipaddr_n_t dst_ip,
 	log_debug("prepare", "chlo_quic_make_packet 4");
 	ip_header->ip_dst.s_addr = dst_ip;
 	log_debug("prepare", "chlo_quic_make_packet 5");
-	log_debug("prepare", "chlo_quic_make_packet 5.1, num_ports: %d", num_ports);
-	log_debug("prepare", "chlo_quic_make_packet 5.2, probe_num: %d", probe_num);
-	log_debug("prepare", "chlo_quic_make_packet 5.3, validation[1]: %d", validation[1]);
-	uint16_t src_port = get_src_port(num_ports, probe_num, validation);
-	log_debug("prepare", "chlo_quic_make_packet 5.4");	
 	udp_header->uh_sport = htons(get_src_port(num_ports, probe_num,
 	                             validation));
 	log_debug("prepare", "chlo_quic_make_packet 6");
