@@ -33,6 +33,7 @@ set(PROBE_MODULE_SOURCES
     probe_modules/module_tcp_synscan_no_validation.c
     probe_modules/module_tcp_synackscan.c
 	#probe_modules/module_tcp_cisco_backdoor.c
+    probe_modules/module_quic_chlo.c
     probe_modules/module_udp.c
     probe_modules/packet.c
     probe_modules/probe_modules.c
@@ -42,7 +43,6 @@ set(PROBE_MODULE_SOURCES
     probe_modules/module_bacnet.c
     probe_modules/module_tftp.c
     probe_modules/module_dns_monlist.c
-    probe_modules/module_quic_chlo.c
 )
 
 set(SOURCES
