@@ -162,7 +162,7 @@ int chlo_quic_init_perthread(void* buf, macaddr_t *src,
 	make_eth_header(eth_header, src, gw);
 	struct ip *ip_header = (struct ip*)(&eth_header[1]);
 	uint16_t len = htons(sizeof(struct ip) + sizeof(struct udphdr) + udp_send_msg_len);
-	log_debug("prepare", "IP LEN IN HEX %#010x", len);
+	log_debug("prepare", "IP LEN IN HEX %h", len);
 	make_ip_header(ip_header, IPPROTO_UDP, len);
 
 	struct udphdr *udp_header = (struct udphdr*)(&ip_header[1]);
@@ -216,149 +216,88 @@ void serializeHash(__uint128_t hash, uint8_t out_hash[12]) {
 }
 
 
-int chlo_quic_make_packet(void *buf, UNUSED size_t *buf_len, ipaddr_n_t src_ip, ipaddr_n_t dst_ip,
+int chlo_quic_make_packet(void *buf, ipaddr_n_t src_ip, ipaddr_n_t dst_ip,
 		uint32_t *validation, int probe_num, UNUSED void *arg)
 {
-	log_debug("prepare", "chlo_quic_make_packet 0");
 	struct ether_header *eth_header = (struct ether_header *) buf;
-	log_debug("prepare", "chlo_quic_make_packet 1");
 	struct ip *ip_header = (struct ip*) (&eth_header[1]);
-	log_debug("prepare", "chlo_quic_make_packet 2");
 	struct udphdr *udp_header= (struct udphdr *) &ip_header[1];
 	//struct = (struct udphdr*) (&ip_header[1]);
-	log_debug("prepare", "chlo_quic_make_packet 3");
 
 	ip_header->ip_src.s_addr = src_ip;
-	log_debug("prepare", "chlo_quic_make_packet 4");
 	ip_header->ip_dst.s_addr = dst_ip;
-	log_debug("prepare", "chlo_quic_make_packet 5");
-	log_debug("prepare", "chlo_quic_make_packet 5.1, num_ports: %d", num_ports);
-	log_debug("prepare", "chlo_quic_make_packet 5.2, probe_num: %d", probe_num);
-	log_debug("prepare", "chlo_quic_make_packet 5.2.1, size of array validation: %d", sizeof(validation) / sizeof(uint32_t));
-	
-	uint32_t v0 = validation[0];
-	log_debug("prepare", "chlo_quic_make_packet 5.2.2, v0: %d", v0);
-	uint32_t v1 = validation[1];
-	log_debug("prepare", "chlo_quic_make_packet 5.2.3, v1: %d", v1);
-	log_debug("prepare", "chlo_quic_make_packet 5.3.1, validation[0]: %#010x", validation[0]);
-	log_debug("prepare", "chlo_quic_make_packet 5.3, validation[1]: %#010x", validation[1]);
-	uint16_t src_port = get_src_port(num_ports, probe_num, validation);
-	log_debug("prepare", "chlo_quic_make_packet 5.4.1 src_port: %d", src_port);
-	log_debug("prepare", "chlo_quic_make_packet 5.4");	
 	udp_header->uh_sport = htons(get_src_port(num_ports, probe_num,
 	                             validation));
-	log_debug("prepare", "chlo_quic_make_packet 6");
 
 	char *payload = (char *) &udp_header[1];
-	log_debug("prepare", "chlo_quic_make_packet 7");
 	int payload_len = 0;
-	log_debug("prepare", "chlo_quic_make_packet 8");
 
 	memset(payload, 0, MAX_UDP_PAYLOAD_LEN);
-	log_debug("prepare", "chlo_quic_make_packet 9");
 
 	// put quic chlo here!
 	quic_common_hdr* common_hdr = (quic_common_hdr*)payload;
-	log_debug("prepare", "chlo_quic_make_packet 10");
 	common_hdr->public_flags = PUBLIC_FLAG_HAS_VERS | PUBLIC_FLAG_8BYTE_CONN_ID;
-	log_debug("prepare", "chlo_quic_make_packet 11");
 	// this should be unique
 	common_hdr->connection_id = connection_id;
-	log_debug("prepare", "chlo_quic_make_packet 12");
     common_hdr->quic_version = 0x0A0A0A0A;//MakeQuicTag('Q', '0', '4', '1');
-	log_debug("prepare", "chlo_quic_make_packet 13");
 	common_hdr->seq_num = 1;
 	// Fill the hash later, but don't hash the hash itself
-	log_debug("prepare", "chlo_quic_make_packet 14");
 	memset(common_hdr->fnv1a_hash, 0, sizeof(common_hdr->fnv1a_hash));
-	log_debug("prepare", "chlo_quic_make_packet 15");
 	//common_hdr->private_flags = PRIVATE_FLAG_HAS_ENTROPY; // has entropy ...
 	payload_len += sizeof(quic_common_hdr);
-	log_debug("prepare", "chlo_quic_make_packet 16");
 	
 	
 	// hash the public header
 	__uint128_t hash = 0;
-	log_debug("prepare", "chlo_quic_make_packet 17");
 	hash = fnv1a_128((uint8_t*)payload, 14);
-	log_debug("prepare", "chlo_quic_make_packet 18");
 
 	// add a frame
 	quic_stream_frame_packet* frame = (quic_stream_frame_packet*)(payload + payload_len);
-	log_debug("prepare", "chlo_quic_make_packet 19");
 	frame->type = FRAME_TYPE_STREAM | FRAME_STREAM_HAS_DATA | FRAME_STREAM_CREATE_SID_LEN(0);
-	log_debug("prepare", "chlo_quic_make_packet 20");
 	frame->stream_id = FRAME_STREAM_CRYPTO_STREAM;
-	log_debug("prepare", "chlo_quic_make_packet 21");
 	
 	// there is a minimum length of a hello.. don't know to what that actually referers, total length?
 	int pad_len = (CLIENTHELLO_MIN_SIZE - sizeof(uint32_t));
-	log_debug("prepare", "chlo_quic_make_packet 22");
 	frame->data_len = INCHOATE_CHLO_LEN + pad_len + sizeof(uint32_t);
-	log_debug("prepare", "chlo_quic_make_packet 23");
 	
 	payload_len += STREAM_FRAME_LEN;
-	log_debug("prepare", "chlo_quic_make_packet 24");
 
 	quic_inchoate_chlo* chlo = (quic_inchoate_chlo*)(payload + payload_len);
-	log_debug("prepare", "chlo_quic_make_packet 25");
 	chlo->tag = MakeQuicTag('C', 'H', 'L', 'O');
-	log_debug("prepare", "chlo_quic_make_packet 26");
 	chlo->num_entries = 2;
-	log_debug("prepare", "chlo_quic_make_packet 27");
 	chlo->__padding = 0;
-	log_debug("prepare", "chlo_quic_make_packet 28");
 	chlo->p_tag = MakeQuicTag('P', 'A', 'D', '\0');
-	log_debug("prepare", "chlo_quic_make_packet 29");
 	chlo->p_offset = pad_len;		// offset from value start to end+1 of pad
-	log_debug("prepare", "chlo_quic_make_packet 30");
 	chlo->v_tag = MakeQuicTag('V', 'E', 'R', '\0');
-	log_debug("prepare", "chlo_quic_make_packet 31");
 	chlo->v_offset = pad_len + sizeof(uint32_t);
-	log_debug("prepare", "chlo_quic_make_packet 32");
 	
 	payload_len += INCHOATE_CHLO_LEN;
-	log_debug("prepare", "chlo_quic_make_packet 33");
 	
 	char* value_data = payload + payload_len;
-	log_debug("prepare", "chlo_quic_make_packet 34");
 	memset(value_data, 0x2d, pad_len);
 //	printf("PADDING LENGTH: %d\n", pad_len);
-	log_debug("prepare", "chlo_quic_make_packet 35");
 	payload_len += pad_len;
-	log_debug("prepare", "chlo_quic_make_packet 36");
 	value_data += pad_len;
-	log_debug("prepare", "chlo_quic_make_packet 37");
     *((uint32_t*)value_data) = 0x0A0A0A0A;//MakeQuicTag('Q', '0', '4', '1');
-	log_debug("prepare", "chlo_quic_make_packet 38");
 	payload_len += sizeof(uint32_t);
 	
-	log_debug("prepare", "chlo_quic_make_packet 39");
 
 	// hash the payload (private + frames), excluding the hash field itself
 	hash = fnv1a_128_inc(hash, (uint8_t*)payload+26, payload_len-26);
-	log_debug("prepare", "chlo_quic_make_packet 40");
 
 	uint8_t serializedHash[12];
-	log_debug("prepare", "chlo_quic_make_packet 41");
 	serializeHash(hash, serializedHash);
-	log_debug("prepare", "chlo_quic_make_packet 42");
 	
 	memcpy(common_hdr->fnv1a_hash, serializedHash, sizeof(serializedHash));
-	log_debug("prepare", "chlo_quic_make_packet 43");
 	
 	
 	// Update the IP and UDP headers to match the new payload length
 	ip_header->ip_len   = htons(sizeof(struct ip) + sizeof(struct udphdr) + payload_len);
-	log_debug("prepare", "chlo_quic_make_packet 44");
 	udp_header->uh_ulen = ntohs(sizeof(struct udphdr) + payload_len);
-	log_debug("prepare", "chlo_quic_make_packet 45");
 	
 
 	ip_header->ip_sum = 0;
-	log_debug("prepare", "chlo_quic_make_packet 46");
 	ip_header->ip_sum = zmap_ip_checksum((unsigned short *) ip_header);
-	log_debug("prepare", "chlo_quic_make_packet 47");
 
 	return EXIT_SUCCESS;
 }

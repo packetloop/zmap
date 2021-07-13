@@ -363,19 +363,10 @@ int send_run(sock_t st, shard_t *s)
 		// Actually send a packet.
 		for (int i = 0; i < zconf.packet_streams; i++) {
 			count++;
-			log_debug("prepare", "send.c, 1.0, i: %d", i);
 			uint32_t src_ip = get_src_ip(current_ip, i);
-			log_debug("prepare", "send.c, 2.0, src_ip: %d", src_ip);
 			uint32_t validation[VALIDATE_BYTES / sizeof(uint32_t)];
-			log_debug("prepare", "send.c, 3.0, VALIDATE_BYTES: %d", VALIDATE_BYTES);
-			log_debug("prepare", "send.c, 3.1, sizeof validation: %d", VALIDATE_BYTES / sizeof(uint32_t));
 			validate_gen(src_ip, current_ip, (uint8_t *)validation);
-			for (int j=0; j<sizeof(validation) / sizeof(uint32_t); j++) {
-				log_debug("prepare", "send.c, 3.2.1, j: %d", j);
-				log_debug("prepare", "send.c, 3.2.2, validation[j]: %#010x", validation[j]);
-			}
 			size_t length = zconf.probe_module->packet_length;
-			log_debug("prepare", "send.c, 3.3, length: %d", length);
 			zconf.probe_module->make_packet(buf, &length, src_ip,
 							current_ip, validation,
 							i, probe_data);
