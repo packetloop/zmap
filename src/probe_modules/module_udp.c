@@ -292,16 +292,6 @@ int udp_make_packet(void *buf, UNUSED size_t *buf_len, ipaddr_n_t src_ip,
 
 	ip_header->ip_src.s_addr = src_ip;
 	ip_header->ip_dst.s_addr = dst_ip;
-
-	log_debug("prepare", "udp_make_packet 5.2.1, size of array validation: %d", sizeof(validation) / sizeof(uint32_t));
-	
-	uint32_t v0 = validation[0];
-	log_debug("prepare", "udp_make_packet 5.2.2, v0: %d", v0);
-	uint32_t v1 = validation[1];
-	log_debug("prepare", "udp_make_packet 5.2.3, v1: %d", v1);
-	log_debug("prepare", "udp_make_packet 5.3.1, validation[0]: %#010x", validation[0]);
-	log_debug("prepare", "udp_make_packet 5.3, validation[1]: %#010x", validation[1]);
-
 	udp_header->uh_sport =
 	    htons(get_src_port(num_ports, probe_num, validation));
 
