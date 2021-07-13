@@ -235,12 +235,14 @@ int chlo_quic_make_packet(void *buf, ipaddr_n_t src_ip, ipaddr_n_t dst_ip,
 	log_debug("prepare", "chlo_quic_make_packet 5.1, num_ports: %d", num_ports);
 	log_debug("prepare", "chlo_quic_make_packet 5.2, probe_num: %d", probe_num);
 	log_debug("prepare", "chlo_quic_make_packet 5.2.1, size of array validation: %d", sizeof(validation) / sizeof(uint32_t));
-	uint32_t v0 = validation[0];
-	log_debug("prepare", "chlo_quic_make_packet 5.2.2, v0: %d", v0);
-	uint32_t v1 = validation[1];
-	log_debug("prepare", "chlo_quic_make_packet 5.2.3, v1: %d", v1);
-	log_debug("prepare", "chlo_quic_make_packet 5.3.1, validation[0]: %#010x", validation[0]);
-	log_debug("prepare", "chlo_quic_make_packet 5.3, validation[1]: %#010x", validation[1]);
+	if (sizeof(validation) / sizeof(uint32_t) < 1) {
+		validation[0] = 1;
+	}
+	if (sizeof(validation) / sizeof(uint32_t) < 2) {
+		validation[1] = 1;
+	}
+	log_debug("prepare", "chlo_quic_make_packet 5.3.1, validation[0]: %d", validation[0]);
+	log_debug("prepare", "chlo_quic_make_packet 5.3, validation[1]: %d", validation[1]);
 	uint16_t src_port = get_src_port(num_ports, probe_num, validation);
 	log_debug("prepare", "chlo_quic_make_packet 5.4.1 src_port: %d", src_port);
 	log_debug("prepare", "chlo_quic_make_packet 5.4");	
