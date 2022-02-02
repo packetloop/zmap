@@ -81,7 +81,7 @@ probe_module_t module_dns;
 static int num_ports;
 
 // char default_domain[16];
-const char default_domain[] = "FFEEFFEE.asert-dns-research.com";
+const char default_domain[] = "FFEEFFEE.asertdnsresearch.com";
 const uint16_t default_qtype = DNS_QTYPE_A;
 
 static char **dns_packets;
