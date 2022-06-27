@@ -85,7 +85,8 @@ void fs_add_system_fields(fieldset_t *fs, int is_repeat, int in_cooldown)
 	fs_add_bool(fs, "repeat", is_repeat);
 	fs_add_bool(fs, "cooldown", in_cooldown);
 	// Note: skip the slow time operations which we don't use, it triples the time.
-#if 0
+	// NOTE: We need these timestamp fields now. Comment in.
+#if 1
 	char *timestr = xmalloc(TIMESTR_LEN + 1);
 	char *timestr_ms = xmalloc(TIMESTR_LEN + 1);
 	struct timeval t;
