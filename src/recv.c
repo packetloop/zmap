@@ -218,7 +218,7 @@ int recv_run(pthread_mutex_t *recv_ready_mutex)
 	return 0;
 }
 
-#define MAX_PACKET_BUF_POOL_SIZE 8192
+#define MAX_PACKET_BUF_POOL_SIZE 16384
 static u_char** packet_buf_pool = NULL;
 static uint32_t packet_buf_pool_idx = 0;
 static pthread_spinlock_t packet_buf_pool_spin;
@@ -299,7 +299,7 @@ void start_handle_thread() {
 		log_fatal("zmap", "packet buf pool overflow.");
 	}
     else {
-        log_debug("zmap", "packet buf pool length:  %llu buffers (%d)", packet_buf_pool_idx, syscall(SYS_gettid));
+        log_debug("zmap", "packet buf pool length:  %llu buffers (%d)", packet_buf_pool_idx+1, syscall(SYS_gettid));
     }
 	*((uint32_t*)(&packet_buf[packet_buf_idx])) = 0;
 	packet_buf_pool[packet_buf_pool_idx++] = packet_buf;
