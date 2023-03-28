@@ -298,6 +298,9 @@ void start_handle_thread() {
 	if (packet_buf_pool_idx >= MAX_PACKET_BUF_POOL_SIZE) {
 		log_fatal("zmap", "packet buf pool overflow.");
 	}
+    else {
+        log_debug("zmap", "packet buf pool length:  %llu buffers (%d)", packet_buf_pool_idx, syscall(SYS_gettid));
+    }
 	*((uint32_t*)(&packet_buf[packet_buf_idx])) = 0;
 	packet_buf_pool[packet_buf_pool_idx++] = packet_buf;
 	pthread_spin_unlock(&packet_buf_pool_spin);
