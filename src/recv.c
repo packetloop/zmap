@@ -218,7 +218,7 @@ int recv_run(pthread_mutex_t *recv_ready_mutex)
 	return 0;
 }
 
-#define MAX_PACKET_BUF_POOL_SIZE 1024
+#define MAX_PACKET_BUF_POOL_SIZE 8192
 static u_char** packet_buf_pool = NULL;
 static uint32_t packet_buf_pool_idx = 0;
 static pthread_spinlock_t packet_buf_pool_spin;
