@@ -1,0 +1,82 @@
+---
+version: 2
+plan:
+  project-key: ATLAS
+  key: ZMAP
+  name: scanning-zmap
+  description: test build of zmap
+variables:
+  major_minor: v1.0
+stages:
+- Default Stage:
+    manual: false
+    final: false
+    jobs:
+    - build only
+build only:
+  key: BUILDONLY
+  description: build the container
+  requirements:
+  - system.DinD
+  artifact-subscriptions: []
+  other:
+    all-other-apps:
+      custom:
+        auto: {}
+        buildHangingConfig.enabled: 'false'
+  tasks:
+  - checkout:
+      force-clean-build: false
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - docker rmi $(docker image ls -q)
+      - echo "Disk Space available -- $(df -hk)"
+      description: Delete all docker images from agent and show disk space
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        version=dev-${bamboo.major_minor}.${bamboo_planRepository_1_revision:0:7}
+        docker build . -t dev-build-${bamboo_planRepository_1_revision:0:7}
+      description: Build requested Docker image and push it to artifactory
+  final-tasks:
+  - clean:
+      description: clean up
+repositories:
+- atlas/zmap:
+    scope: project
+triggers:
+- bitbucket-server-trigger:
+    description: build on commit
+branches:
+  create: for-new-branch
+  delete:
+    after-deleted-days: 7
+    after-inactive-days: 30
+  link-to-jira: true
+notifications: []
+labels: []
+dependencies:
+  require-all-stages-passing: false
+  enabled-for-branches: true
+  block-strategy: none
+  plans: []
+other:
+  concurrent-build-plugin: system-default
+---
+version: 2
+plan:
+  key: ATLAS-ZMAP
+plan-permissions:
+- users:
+  - jrich
+  groups:
+  - ARB_ATLAS_ADMINS
+  permissions:
+  - view
+  - edit
+  - build
+...
