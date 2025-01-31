@@ -31,6 +31,7 @@ build only:
   - script:
       interpreter: SHELL
       scripts:
+      - docker rm $(docker ps -aq)
       - docker rmi $(docker image ls -q)
       - echo "Disk Space available -- $(df -hk)"
       description: Delete all docker images from agent and show disk space
