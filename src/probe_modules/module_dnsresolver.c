@@ -6,10 +6,15 @@
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 
-/* DNS Resolver Detection Module for ZMap v0.68
+/* DNS Resolver Detection Module for ZMap v0.69
  * Identifies open DNS resolvers that can be exploited for DNS reflection/amplification attacks
  * Sends specially crafted DNS queries with encoded correlation data
  * Validates responses to confirm recursive resolution capability
+ *
+ * v0.69 Changes:
+ * - Fixed port_args to accept port specification without causing FATAL error
+ * - Module now silently ignores specified port and uses UDP/53
+ * - No functional changes to DNS query behavior
  *
  * v0.68 Changes:
  * - Fixed timestamp encoding to use microseconds since epoch
@@ -803,7 +808,7 @@ int dnsresolver_global_initialize(struct state_conf *conf)
 
     assert(module_dnsresolver.max_packet_length <= MAX_PACKET_SIZE);
 
-    log_info("dnsresolver", "DNS resolver detection module v0.68 initialized");
+    log_info("dnsresolver", "DNS resolver detection module v0.69 initialized");
     log_info("dnsresolver", "Base domain: %s", BASE_DOMAIN);
     log_info("dnsresolver", "Max packet length: %zu bytes", module_dnsresolver.max_packet_length);
 
@@ -819,7 +824,7 @@ int dnsresolver_global_cleanup(UNUSED struct state_conf *zconf,
         template_packet = NULL;
     }
 
-    log_info("dnsresolver", "DNS resolver detection module v0.68 cleanup completed");
+    log_info("dnsresolver", "DNS resolver detection module v0.69 cleanup completed");
     return EXIT_SUCCESS;
 }
 
@@ -909,7 +914,7 @@ probe_module_t module_dnsresolver = {
     .max_packet_length = 0, // Set in global_initialize
     .pcap_filter = "udp port 53",
     .pcap_snaplen = 1500,
-    .port_args = 0, // No port arguments - hardcoded to 53
+    .port_args = 1, // Accept port arguments - prevents FATAL error, port still ignored
     .global_initialize = &dnsresolver_global_initialize,
     .thread_initialize = &dnsresolver_init_perthread,
     .prepare_packet = &dnsresolver_prepare_packet,
@@ -922,11 +927,16 @@ probe_module_t module_dnsresolver = {
     .fields = fields,
     .numfields = sizeof(fields) / sizeof(fields[0]),
     .helptext =
-        "DNS Resolver Detection Module v0.68\n"
+        "DNS Resolver Detection Module v0.69\n"
         "\n"
         "This module identifies open DNS resolvers that can be exploited for DNS\n"
         "reflection/amplification attacks. It sends specially crafted DNS queries\n"
         "with encoded correlation data to test recursive resolution capabilities.\n"
+        "\n"
+        "v0.69 Changes:\n"
+        "  - Fixed port_args to accept port specification without causing FATAL error\n"
+        "  - Module now silently ignores specified port and uses UDP/53\n"
+        "  - No functional changes to DNS query behavior\n"
         "\n"
         "v0.68 Changes:\n"
         "  - Fixed timestamp encoding to use microseconds since epoch\n"
