@@ -14,7 +14,7 @@
 #     docker run -it --rm --net=host ghcr.io/zmap/zmap <zmap args>
 ####
 
-FROM ubuntu:24.04 as builder
+FROM ubuntu:24.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
@@ -38,9 +38,14 @@ WORKDIR /usr/local/src
 
 COPY . .
 
+ARG ZMAP_VERSION="netscout_dev_build" # Default if not specified during build
+
+# Set the version number in the zmap build
+RUN sed -i "s/set(ZMAP_VERSION DEVELOPMENT)/set(ZMAP_VERSION ${ZMAP_VERSION})/" CMakeLists.txt
+
 RUN cd /usr/local/src \
     && mkdir -p /opt/zmap \
-    && cmake . -DRESPECT_INSTALL_PREFIX_CONFIG=ON  \
+    && cmake . -DRESPECT_INSTALL_PREFIX_CONFIG=ON \
     && cmake --build . --parallel "$(nproc)" \
     && cmake --install . --prefix "/opt/zmap"
 
