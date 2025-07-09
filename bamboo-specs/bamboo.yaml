@@ -41,7 +41,7 @@ build only:
       - |-
         #!/bin/bash
         version=dev-${bamboo.major_minor}.${bamboo_planRepository_1_revision:0:7}
-        docker build . -t dev-build-${bamboo_planRepository_1_revision:0:7}
+        docker build --build-arg ZMAP_VERSION="netscout_${bamboo_planRepository_1_revision:0:7}" . -t dev-build-${bamboo_planRepository_1_revision:0:7}
       description: Build requested Docker image and push it to artifactory
   final-tasks:
   - clean:
