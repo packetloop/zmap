@@ -35,6 +35,7 @@ set(PROBE_MODULE_SOURCES
     probe_modules/module_dns.c
     probe_modules/module_bacnet.c
     probe_modules/module_dnsresolver.c
+    probe_modules/module_forbidden_scan.c
 )
 
 set(SOURCES
