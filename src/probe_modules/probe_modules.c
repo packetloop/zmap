@@ -31,6 +31,7 @@ extern probe_module_t module_ipip;
 extern probe_module_t module_bacnet;
 // ADD YOUR MODULE HERE
 extern probe_module_t module_dnsresolver;
+extern probe_module_t module_forbidden_scan;
 
 probe_module_t *probe_modules[] = {
     &module_tcp_synscan,
@@ -45,6 +46,7 @@ probe_module_t *probe_modules[] = {
     &module_ipip,
     // ADD YOUR MODULE HERE
     &module_dnsresolver,
+    &module_forbidden_scan,
 };
 
 probe_module_t *get_probe_module_by_name(const char *name)
